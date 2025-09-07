@@ -1,5 +1,4 @@
 import axios from "axios";
-import { QRCodeCanvas } from "qrcode.react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import CopyButton from "../components/CopyButton";
@@ -13,8 +12,11 @@ export default function PayPage() {
     const [order, setOrder] = useState<OrderPublic | null>(null);
     const [utr, setUtr] = useState("");
     const [loading, setLoading] = useState(true);
+    const [timeLeft, setTimeLeft] = useState(10 * 60); // display-only timer
+
     const api = import.meta.env.VITE_API_URL;
 
+    // Fetch order details
     useEffect(() => {
         if (!orderId) return;
         (async () => {
@@ -31,16 +33,28 @@ export default function PayPage() {
         })();
     }, [orderId, api]);
 
-    if (loading) return <div>Loading…</div>;
-    if (!order) return <div>Order not found</div>;
+    // Countdown timer (only display)
+    useEffect(() => {
+        if (timeLeft <= 0) return;
+        const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+        return () => clearInterval(timer);
+    }, [timeLeft]);
+
+    if (loading) return <div className="text-center py-10">Loading…</div>;
+    if (!order) return <div className="text-center py-10">Order not found</div>;
+
+    const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+    const seconds = String(timeLeft % 60).padStart(2, "0");
 
     const onPay = (method: string) => {
         const uri = providerUri(
             method,
-            order.upiLink || "",
+            order.upiLink,
             order.maskedVpa.replace(/\*+/g, ""),
             order.amount
         );
+
+        // Redirect (works on mobile, on PC it will just try to open the link)
         window.location.href = uri;
     };
 
@@ -49,81 +63,77 @@ export default function PayPage() {
             await axios.post(`${api}/api/orders/${orderId}/utr`, { utr });
             alert("UTR Submitted.");
         } catch (err: any) {
-            alert(err?.response?.data?.message || "Error");
+            alert(err?.response?.data?.message || "Error submitting UTR");
         }
     };
 
     return (
-        <div className="max-w-3xl mx-auto p-6 bg-white rounded-xl shadow">
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">Pay ₹{order.amount}</h2>
-                <div className="text-sm text-gray-600">
-                    Order: {order.orderId}
-                </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
+        <div className="max-w-lg mx-auto bg-white rounded-xl shadow p-6">
+            {/* Header with Timer */}
+            <div className="flex justify-between items-center mb-4">
                 <div>
-                    <div className="mb-3">
-                        VPA:{" "}
-                        <strong className="font-mono">{order.maskedVpa}</strong>
-                    </div>
-                    <div className="flex gap-2 mb-4">
-                        <CopyButton
-                            text={String(order.amount)}
-                            label="COPY AMOUNT"
-                        />
-                        <CopyButton
-                            text={order.maskedVpa.replace(/\*+/g, "")}
-                            label="COPY VPA"
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        {methods.map((m) => (
-                            <button
-                                key={m}
-                                onClick={() => onPay(m)}
-                                className="border rounded p-4 text-center hover:bg-gray-50"
-                            >
-                                <div className="mb-2 font-medium">{m}</div>
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className="mt-6">
-                        <label className="block mb-1">
-                            Enter UTR after payment
-                        </label>
-                        <input
-                            className="w-full p-3 border rounded"
-                            value={utr}
-                            onChange={(e) => setUtr(e.target.value)}
-                        />
-                        <button
-                            onClick={submitUtr}
-                            className="mt-3 w-full bg-blue-600 text-white p-3 rounded"
-                        >
-                            Submit UTR
-                        </button>
-                    </div>
+                    <p className="text-gray-600 text-sm">
+                        Order will be closed in:
+                    </p>
+                    <p className="text-xl font-mono text-blue-600">
+                        {minutes}:{seconds}
+                    </p>
                 </div>
-
-                <div className="flex flex-col items-center">
-                    <QRCodeCanvas
-                        value={order.upiLink || ""}
-                        size={220}
-                        includeMargin
-                    />
-                    <div className="mt-2 text-xs break-all text-center">
-                        {order.upiLink}
-                    </div>
+                <div className="text-right">
+                    <p className="text-gray-600 text-sm">Amount</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                        ₹ {order.amount}
+                    </p>
+                    <CopyButton text={String(order.amount)} label="COPY" />
                 </div>
             </div>
 
-            <p className="text-xs text-gray-500 mt-4">
-                Note: One UPI transfer should match the order amount. UTR is
-                used for manual reconciliation.
+            {/* VPA Section */}
+            <div className="mb-4">
+                <p className="text-gray-600 text-sm">VPA/UPI</p>
+                <p className="font-mono text-lg">{order.maskedVpa}</p>
+                <CopyButton
+                    text={order.maskedVpa.replace(/\*+/g, "")}
+                    label="COPY"
+                />
+            </div>
+
+            {/* Payment Methods */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
+                {methods.map((m) => (
+                    <button
+                        key={m}
+                        onClick={() => onPay(m)}
+                        className="border rounded-xl p-4 text-center hover:bg-blue-50"
+                    >
+                        <div className="mb-1 font-medium">{m}</div>
+                    </button>
+                ))}
+            </div>
+
+            {/* UTR Input */}
+            <div className="mb-6">
+                <label className="block mb-1 text-gray-700">
+                    Fill the UTR number after you complete payment:
+                </label>
+                <input
+                    className="w-full p-3 border rounded mb-3"
+                    placeholder="Enter UTR number"
+                    value={utr}
+                    onChange={(e) => setUtr(e.target.value)}
+                />
+                <button
+                    onClick={submitUtr}
+                    className="w-full bg-blue-600 text-white rounded p-3 font-semibold hover:bg-blue-700"
+                >
+                    Submit UTR
+                </button>
+            </div>
+
+            {/* Notice */}
+            <p className="text-xs text-red-600 mt-4">
+                Notice: One UPI can only transfer money once. Don't change the
+                payment amount — otherwise the order cannot be closed.
             </p>
         </div>
     );

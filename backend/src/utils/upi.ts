@@ -21,7 +21,7 @@ export function maskVpa(vpa: string) {
     if (parts.length !== 2) return vpa;
     const user = parts[0];
     const domain = parts[1];
-    if (user.length <= 4) return `${user[0]}***@${domain}`;
+    if ((user?.length ?? 0) <= 4) return `${user?.[0]}***@${domain}`;
     return `${user?.slice(0, 2)}***${user?.slice(-2)}@${domain}`;
 }
 
