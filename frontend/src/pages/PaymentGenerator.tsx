@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { useState } from "react";
+import Swal from "sweetalert2";
 import type { CreateOrderResp } from "../types/types";
 
 export default function PaymentGenerator() {
@@ -14,14 +15,20 @@ export default function PaymentGenerator() {
     const submit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+
         const token = localStorage.getItem("token");
         if (!token) {
-            alert("Please login to generate a payment link.");
+            Swal.fire({
+                icon: "warning",
+                title: "Login Required",
+                text: "Please login to generate a payment link.",
+            });
             setLoading(false);
             return;
         }
+
         try {
-            const r = await axios.post<CreateOrderResp>(
+            const response = await axios.post<CreateOrderResp>(
                 `${api}/api/orders`,
                 {
                     amount,
@@ -29,11 +36,31 @@ export default function PaymentGenerator() {
                     merchantName,
                     note: "Order",
                 },
-                { headers: { Authorization: `Bearer ${token}` } }
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
             );
-            setResult(r.data);
-        } catch (err: any) {
-            alert(err?.response?.data?.message || "Error");
+            setResult(response.data);
+
+            Swal.fire({
+                icon: "success",
+                title: "Payment Link Generated",
+                text: `Order ID: ${response.data.orderId}`,
+            });
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: err.response?.data?.message || err.message,
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Unexpected Error",
+                    text: "Something went wrong.",
+                });
+            }
         } finally {
             setLoading(false);
         }

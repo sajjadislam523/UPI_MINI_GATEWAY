@@ -3,11 +3,21 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import CopyButton from "../components/CopyButton";
-import PaymentIcon from "../components/PaymentIcon";
 import { providerUri } from "../lib/upi";
 import type { OrderPublic } from "../types/types";
 
-const methods = ["PhonePe", "Paytm", "Google Pay", "UPI"];
+// icons
+import googlePay from "../assets/icons/googlepay.png";
+import payTm from "../assets/icons/paytm.svg";
+import phonePay from "../assets/icons/phonepay.svg";
+import upi from "../assets/icons/upi.webp";
+
+const methods = [
+    { name: "phonepay", icon: phonePay },
+    { name: "paytm", icon: payTm },
+    { name: "googlepay", icon: googlePay },
+    { name: "upi", icon: upi },
+];
 
 export default function PayPage() {
     const { orderId } = useParams<{ orderId: string }>();
@@ -138,20 +148,20 @@ export default function PayPage() {
     };
 
     return (
-        <div className="max-w-lg mx-auto bg-white rounded-xl shadow p-6">
+        <div className="max-w-lg mx-auto space-y-4 rounded-xl shadow p-6">
             {/* Header with Timer */}
-            <div className="flex justify-between items-center mb-4">
-                <div>
-                    <p className="text-gray-600 text-sm">
-                        Order will be closed in:
-                    </p>
-                    <p className="text-xl font-mono text-blue-600">
-                        {minutes}:{seconds}
-                    </p>
-                </div>
-                <div className="text-right">
-                    <p className="text-gray-600 text-sm">Amount</p>
-                    <p className="text-2xl font-bold text-gray-900">
+            <div className="flex items-center justify-between">
+                <p className="text-gray-600 text-sm">
+                    Order will be closed in:
+                </p>
+                <p className="text-xl font-mono text-blue-600">
+                    {minutes}:{seconds}
+                </p>
+            </div>
+            <div className="flex items-center justify-between">
+                <p className="text-gray-600 text-sm">Amount</p>
+                <div className="flex items-center gap-3">
+                    <p className="text-xl font-bold text-gray-900">
                         ₹ {order.amount}
                     </p>
                     <CopyButton text={String(order.amount)} label="COPY" />
@@ -159,23 +169,24 @@ export default function PayPage() {
             </div>
 
             {/* VPA Section */}
-            <div className="mb-4">
+            <div className="mb-4 flex items-center justify-between">
                 <p className="text-gray-600 text-sm">VPA/UPI</p>
-                <p className="font-mono text-lg">{order.maskedVpa}</p>
-                <CopyButton text={fullVpa} label="COPY" />
+                <div className="flex items-center gap-3">
+                    <p className="font-mono text-lg">{order.maskedVpa}</p>
+                    <CopyButton text={fullVpa} label="COPY" />
+                </div>
             </div>
 
             {/* Payment Methods */}
-            <div className="flex flex-col gap-3 mb-6">
+            <div className="flex flex-col items-center gap-3 mb-6">
                 {methods.map((m) => (
-                    <button
-                        key={m}
-                        onClick={() => onPay(m)}
-                        className="border rounded-xl p-4 text-center hover:bg-blue-50 flex items-center justify-center gap-3"
-                    >
-                        <PaymentIcon method={m} />
-                        <span className="font-medium">{m}</span>
-                    </button>
+                    <img
+                        key={m.name}
+                        src={m.icon}
+                        alt={m.name}
+                        onClick={() => onPay(m.name)}
+                        className="p-4 w-20 h-20 cursor-pointer "
+                    />
                 ))}
             </div>
 
