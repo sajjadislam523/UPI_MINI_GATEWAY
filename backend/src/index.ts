@@ -2,7 +2,10 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
+import authRouter from "./routes/auth";
+import dashboardRouter from "./routes/dashboard";
 import ordersRouter from "./routes/order";
+import usersRouter from "./routes/users";
 
 dotenv.config();
 
@@ -27,7 +30,10 @@ app.use(
 );
 
 // ✅ API Routes
+app.use("/api/auth", authRouter);
+app.use("/api/dashboard", dashboardRouter);
 app.use("/api/orders", ordersRouter);
+app.use("/api/users", usersRouter);
 
 // ✅ Parse PORT as number
 const PORT = parseInt(process.env.PORT || "4000", 10);

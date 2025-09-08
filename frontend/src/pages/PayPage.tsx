@@ -1,11 +1,23 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useParams } from "react-router-dom";
+import Swal from "sweetalert2";
 import CopyButton from "../components/CopyButton";
 import { providerUri } from "../lib/upi";
 import type { OrderPublic } from "../types/types";
 
-const methods = ["PhonePe", "Paytm", "Google Pay", "UPI"];
+// icons
+import googlePay from "../assets/icons/googlepay.png";
+import payTm from "../assets/icons/paytm.svg";
+import phonePay from "../assets/icons/phonepay.svg";
+import upi from "../assets/icons/upi.webp";
+
+const methods = [
+    { name: "phonepay", icon: phonePay },
+    { name: "paytm", icon: payTm },
+    { name: "googlepay", icon: googlePay },
+    { name: "upi", icon: upi },
+];
 
 export default function PayPage() {
     const { orderId } = useParams<{ orderId: string }>();
@@ -18,19 +30,36 @@ export default function PayPage() {
 
     // Fetch order details
     useEffect(() => {
-        if (!orderId) return;
-        (async () => {
+        const fetchOrder = async () => {
+            if (!orderId) return;
             try {
                 const r = await axios.get<OrderPublic>(
                     `${api}/api/orders/${orderId}`
                 );
                 setOrder(r.data);
             } catch (err) {
-                alert("Order not found");
+                if (axios.isAxiosError(err)) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text:
+                            err.response?.data?.message ||
+                            "Error fetching order",
+                        confirmButtonColor: "#2563eb",
+                    });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Unknown Error",
+                        text: "Something went wrong while fetching order details.",
+                        confirmButtonColor: "#2563eb",
+                    });
+                }
             } finally {
                 setLoading(false);
             }
-        })();
+        };
+        fetchOrder();
     }, [orderId, api]);
 
     // Countdown timer (only display)
@@ -43,10 +72,32 @@ export default function PayPage() {
     if (loading) return <div className="text-center py-10">Loading…</div>;
     if (!order) return <div className="text-center py-10">Order not found</div>;
 
+    // Safely parse the full VPA from the UPI link
+    const fullVpa = (() => {
+        if (order.upiLink) {
+            try {
+                const url = new URL(order.upiLink);
+                return url.searchParams.get("pa") || "";
+            } catch (e) {
+                console.error("Could not parse UPI link:", order.upiLink, e);
+            }
+        }
+        return order.maskedVpa.replace(/\*+/g, "");
+    })();
+
     const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
     const seconds = String(timeLeft % 60).padStart(2, "0");
 
     const onPay = (method: string) => {
+        if (!order?.upiLink) {
+            Swal.fire({
+                icon: "warning",
+                title: "UPI Link Missing",
+                text: "UPI link not available for this order.",
+                confirmButtonColor: "#2563eb",
+            });
+            return;
+        }
         const uri = providerUri(
             method,
             order.upiLink,
@@ -54,34 +105,63 @@ export default function PayPage() {
             order.amount
         );
 
-        // Redirect (works on mobile, on PC it will just try to open the link)
         window.location.href = uri;
     };
 
     const submitUtr = async () => {
+        if (!orderId) return;
+        if (!utr.trim()) {
+            Swal.fire({
+                icon: "warning",
+                title: "Missing UTR",
+                text: "Please enter a valid UTR number before submitting.",
+                confirmButtonColor: "#2563eb",
+            });
+            return;
+        }
         try {
             await axios.post(`${api}/api/orders/${orderId}/utr`, { utr });
-            alert("UTR Submitted.");
-        } catch (err: any) {
-            alert(err?.response?.data?.message || "Error submitting UTR");
+            Swal.fire({
+                icon: "success",
+                title: "UTR Submitted",
+                text: "Your payment UTR has been submitted successfully.",
+                confirmButtonColor: "#2563eb",
+            });
+            setUtr("");
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Submission Failed",
+                    text: err.response?.data?.message || "Error submitting UTR",
+                    confirmButtonColor: "#dc2626",
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Unknown Error",
+                    text: "Something went wrong while submitting UTR.",
+                    confirmButtonColor: "#dc2626",
+                });
+            }
         }
     };
 
     return (
-        <div className="max-w-lg mx-auto bg-white rounded-xl shadow p-6">
+        <div className="max-w-lg mx-auto space-y-4 rounded-xl shadow p-6">
             {/* Header with Timer */}
-            <div className="flex justify-between items-center mb-4">
-                <div>
-                    <p className="text-gray-600 text-sm">
-                        Order will be closed in:
-                    </p>
-                    <p className="text-xl font-mono text-blue-600">
-                        {minutes}:{seconds}
-                    </p>
-                </div>
-                <div className="text-right">
-                    <p className="text-gray-600 text-sm">Amount</p>
-                    <p className="text-2xl font-bold text-gray-900">
+            <div className="flex items-center justify-between">
+                <p className="text-gray-600 text-sm">
+                    Order will be closed in:
+                </p>
+                <p className="text-xl font-mono text-blue-600">
+                    {minutes}:{seconds}
+                </p>
+            </div>
+            <div className="flex items-center justify-between">
+                <p className="text-gray-600 text-sm">Amount</p>
+                <div className="flex items-center gap-3">
+                    <p className="text-xl font-bold text-gray-900">
                         ₹ {order.amount}
                     </p>
                     <CopyButton text={String(order.amount)} label="COPY" />
@@ -89,25 +169,24 @@ export default function PayPage() {
             </div>
 
             {/* VPA Section */}
-            <div className="mb-4">
+            <div className="mb-4 flex items-center justify-between">
                 <p className="text-gray-600 text-sm">VPA/UPI</p>
-                <p className="font-mono text-lg">{order.maskedVpa}</p>
-                <CopyButton
-                    text={order.maskedVpa.replace(/\*+/g, "")}
-                    label="COPY"
-                />
+                <div className="flex items-center gap-3">
+                    <p className="font-mono text-lg">{order.maskedVpa}</p>
+                    <CopyButton text={fullVpa} label="COPY" />
+                </div>
             </div>
 
             {/* Payment Methods */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="flex flex-col items-center gap-3 mb-6">
                 {methods.map((m) => (
-                    <button
-                        key={m}
-                        onClick={() => onPay(m)}
-                        className="border rounded-xl p-4 text-center hover:bg-blue-50"
-                    >
-                        <div className="mb-1 font-medium">{m}</div>
-                    </button>
+                    <img
+                        key={m.name}
+                        src={m.icon}
+                        alt={m.name}
+                        onClick={() => onPay(m.name)}
+                        className="p-4 w-20 h-20 cursor-pointer "
+                    />
                 ))}
             </div>
 

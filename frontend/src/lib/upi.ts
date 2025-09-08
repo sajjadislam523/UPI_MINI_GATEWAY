@@ -1,32 +1,33 @@
 export function providerUri(
     method: string,
-    upiLink: string,
+    upiLink: string | undefined,
     vpa: string,
     amount: number
 ) {
-    // Build the base parameters
-    const params = new URLSearchParams();
-    params.set("pa", vpa);
-    params.set("pn", "Merchant");
-    params.set("am", String(amount));
-    params.set("cu", "INR");
+    const safeUpiLink = upiLink ?? ""; // fallback inside function
+    const base = (() => {
+        if (safeUpiLink) return safeUpiLink;
 
-    // If a custom upiLink is passed, return it directly
-    if (upiLink) return upiLink;
+        const baseUri = `upi://pay?pa=${encodeURIComponent(
+            vpa
+        )}&pn=Merchant&am=${amount}&cu=INR`;
 
-    let scheme = `upi://pay?${params.toString()}`;
+        switch (method.toLowerCase()) {
+            case "phonepe":
+                return `phonepe://pay?${baseUri.split("?")[1]}`;
+            case "paytm":
+                return `paytmmp://pay?${baseUri.split("?")[1]}`;
+            case "google pay":
+                return `tez://upi/pay?${baseUri.split("?")[1]}`;
+            default:
+                return baseUri;
+        }
+    })();
 
-    switch (method.toLowerCase()) {
-        case "phonepe":
-            scheme = `phonepe://pay?${params.toString()}`;
-            break;
-        case "paytm":
-            scheme = `paytmmp://pay?${params.toString()}`;
-            break;
-        case "google pay":
-            scheme = `tez://upi/pay?${params.toString()}`;
-            break;
-    }
-
-    return scheme;
+    if (method === "UPI") return safeUpiLink;
+    const p = new URLSearchParams();
+    p.set("pa", vpa);
+    p.set("am", String(amount));
+    p.set("cu", "INR");
+    return `${base}?${p.toString()}`;
 }

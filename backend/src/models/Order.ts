@@ -1,4 +1,4 @@
-import mongoose, { Document } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 
 export type OrderStatus =
     | "PENDING"
@@ -18,10 +18,16 @@ export interface IOrder extends Document {
     utr?: string | null;
     expiresAt?: Date;
     createdAt?: Date;
+    user: Schema.Types.ObjectId;
 }
 
 const OrderSchema = new mongoose.Schema<IOrder>(
     {
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            ref: "User",
+        },
         orderId: { type: String, required: true, unique: true, index: true },
         amount: { type: Number, required: true },
         vpa: { type: String, required: true },

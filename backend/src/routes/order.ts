@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import rateLimit from "express-rate-limit";
 import { customAlphabet } from "nanoid";
+import { admin, AuthRequest, protect } from "../middleware/auth";
 import Order from "../models/Order";
 import { buildUpiLink, isValidVpa, maskVpa } from "../utils/upi";
 
@@ -8,7 +9,7 @@ const router = Router();
 const nano = customAlphabet("1234567890abcdefghijklmnopqrstuvwxyz", 10);
 const utrLimiter = rateLimit({ windowMs: 10 * 60 * 1000, max: 5 });
 
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", protect, async (req: AuthRequest, res: Response) => {
     try {
         const {
             amount,
@@ -33,6 +34,7 @@ router.post("/", async (req: Request, res: Response) => {
         const expiresAt = new Date(Date.now() + Number(expiresInSec) * 1000);
 
         const order = await Order.create({
+            user: req.user?.userId,
             orderId,
             amount,
             vpa,
@@ -94,7 +96,7 @@ router.post(
 );
 
 // admin verify (in prod protect with auth)
-router.post("/:orderId/verify", async (req: Request, res: Response) => {
+router.post("/:orderId/verify", protect, admin, async (req, res) => {
     const order = await Order.findOneAndUpdate(
         { orderId: req.params.orderId },
         { status: "VERIFIED" },
