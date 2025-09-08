@@ -43,14 +43,10 @@ mongoose
     .connect(process.env.MONGO_URI || "")
     .then(() => {
         console.log("✅ Mongo connected");
-        app.listen(PORT, () => {
-            console.log(
-                `🚀 Server running at: ${PORT}\n` +
-                    `🔗 Try from phone: http://<your-pc-ip>:${PORT}`
-            );
-        });
     })
     .catch((err) => {
         console.error("❌ DB connect error:", err);
         process.exit(1);
     });
+
+export default app;
