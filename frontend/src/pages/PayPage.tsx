@@ -44,6 +44,21 @@ export default function PayPage() {
     if (loading) return <div className="text-center py-10">Loading…</div>;
     if (!order) return <div className="text-center py-10">Order not found</div>;
 
+    // Safely parse the full VPA from the UPI link
+    const fullVpa = (() => {
+        if (order.upiLink) {
+            try {
+                // Use URL to parse the link and get the 'pa' (payee address)
+                const url = new URL(order.upiLink);
+                return url.searchParams.get("pa") || "";
+            } catch (e) {
+                console.error("Could not parse UPI link:", order.upiLink, e);
+            }
+        }
+        // Fallback for safety, though it might be incomplete
+        return order.maskedVpa.replace(/\*+/g, "");
+    })();
+
     const minutes = String(Math.floor(timeLeft / 60)).padStart(2, "0");
     const seconds = String(timeLeft % 60).padStart(2, "0");
 
@@ -93,10 +108,7 @@ export default function PayPage() {
             <div className="mb-4">
                 <p className="text-gray-600 text-sm">VPA/UPI</p>
                 <p className="font-mono text-lg">{order.maskedVpa}</p>
-                <CopyButton
-                    text={order.maskedVpa.replace(/\*+/g, "")}
-                    label="COPY"
-                />
+                <CopyButton text={fullVpa} label="COPY" />
             </div>
 
             {/* Payment Methods */}
