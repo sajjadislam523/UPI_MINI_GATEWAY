@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import Swal from "sweetalert2";
 import CopyButton from "../components/CopyButton";
 import PaymentIcon from "../components/PaymentIcon";
 import { providerUri } from "../lib/upi";
@@ -27,7 +28,23 @@ export default function PayPage() {
                 );
                 setOrder(r.data);
             } catch (err) {
-                alert("Order not found");
+                if (axios.isAxiosError(err)) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text:
+                            err.response?.data?.message ||
+                            "Error fetching order",
+                        confirmButtonColor: "#2563eb",
+                    });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Unknown Error",
+                        text: "Something went wrong while fetching order details.",
+                        confirmButtonColor: "#2563eb",
+                    });
+                }
             } finally {
                 setLoading(false);
             }
@@ -49,14 +66,12 @@ export default function PayPage() {
     const fullVpa = (() => {
         if (order.upiLink) {
             try {
-                // Use URL to parse the link and get the 'pa' (payee address)
                 const url = new URL(order.upiLink);
                 return url.searchParams.get("pa") || "";
             } catch (e) {
                 console.error("Could not parse UPI link:", order.upiLink, e);
             }
         }
-        // Fallback for safety, though it might be incomplete
         return order.maskedVpa.replace(/\*+/g, "");
     })();
 
@@ -64,6 +79,15 @@ export default function PayPage() {
     const seconds = String(timeLeft % 60).padStart(2, "0");
 
     const onPay = (method: string) => {
+        if (!order?.upiLink) {
+            Swal.fire({
+                icon: "warning",
+                title: "UPI Link Missing",
+                text: "UPI link not available for this order.",
+                confirmButtonColor: "#2563eb",
+            });
+            return;
+        }
         const uri = providerUri(
             method,
             order.upiLink,
@@ -71,17 +95,45 @@ export default function PayPage() {
             order.amount
         );
 
-        // Redirect (works on mobile, on PC it will just try to open the link)
         window.location.href = uri;
     };
 
     const submitUtr = async () => {
         if (!orderId) return;
+        if (!utr.trim()) {
+            Swal.fire({
+                icon: "warning",
+                title: "Missing UTR",
+                text: "Please enter a valid UTR number before submitting.",
+                confirmButtonColor: "#2563eb",
+            });
+            return;
+        }
         try {
             await axios.post(`${api}/api/orders/${orderId}/utr`, { utr });
-            alert("UTR Submitted.");
-        } catch (err: any) {
-            alert(err?.response?.data?.message || "Error submitting UTR");
+            Swal.fire({
+                icon: "success",
+                title: "UTR Submitted",
+                text: "Your payment UTR has been submitted successfully.",
+                confirmButtonColor: "#2563eb",
+            });
+            setUtr("");
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Submission Failed",
+                    text: err.response?.data?.message || "Error submitting UTR",
+                    confirmButtonColor: "#dc2626",
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Unknown Error",
+                    text: "Something went wrong while submitting UTR.",
+                    confirmButtonColor: "#dc2626",
+                });
+            }
         }
     };
 
