@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import CopyButton from "../components/CopyButton";
+import PaymentIcon from "../components/PaymentIcon";
 import { providerUri } from "../lib/upi";
 import type { OrderPublic } from "../types/types";
 
@@ -99,14 +100,15 @@ export default function PayPage() {
             </div>
 
             {/* Payment Methods */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="flex flex-col gap-3 mb-6">
                 {methods.map((m) => (
                     <button
                         key={m}
                         onClick={() => onPay(m)}
-                        className="border rounded-xl p-4 text-center hover:bg-blue-50"
+                        className="border rounded-xl p-4 text-center hover:bg-blue-50 flex items-center justify-center gap-3"
                     >
-                        <div className="mb-1 font-medium">{m}</div>
+                        <PaymentIcon method={m} />
+                        <span className="font-medium">{m}</span>
                     </button>
                 ))}
             </div>

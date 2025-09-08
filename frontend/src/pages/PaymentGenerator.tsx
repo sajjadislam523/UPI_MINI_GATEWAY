@@ -30,7 +30,7 @@ export default function PaymentGenerator() {
     };
 
     return (
-        <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow">
+        <div className="max-w-lg mx-auto p-6 bg-white rounded-xl shadow">
             <h2 className="text-xl font-semibold mb-4">
                 Payment Link Generator
             </h2>
