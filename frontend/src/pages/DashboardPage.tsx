@@ -36,27 +36,27 @@ export default function DashboardPage() {
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-white p-6 rounded-lg shadow">
-                    <h2 className="text-xl font-semibold">Total Users</h2>
-                    <p className="text-3xl">{stats.totalUsers}</p>
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+        <h2 className="text-xl font-semibold text-gray-700">Total Users</h2>
+        <p className="text-4xl font-bold text-blue-600">{stats.totalUsers}</p>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow">
-                    <h2 className="text-xl font-semibold">Total Orders</h2>
-                    <p className="text-3xl">{stats.totalOrders}</p>
+    <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+        <h2 className="text-xl font-semibold text-gray-700">Total Orders</h2>
+        <p className="text-4xl font-bold text-blue-600">{stats.totalOrders}</p>
                 </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-4">Orders by User</h2>
-                <ul className="space-y-2">
+<div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+    <h2 className="text-xl font-semibold mb-4 text-gray-700">Orders by User</h2>
+    <ul className="space-y-3">
                     {stats.userOrders.map((user) => (
                         <li
                             key={user.username}
-                            className="flex justify-between items-center"
+                className="flex justify-between items-center p-3 bg-gray-50 rounded-md"
                         >
-                            <span>{user.username}</span>
-                            <span className="font-semibold">{user.count}</span>
+                <span className="text-gray-800">{user.username}</span>
+                <span className="font-semibold text-blue-600">{user.count}</span>
                         </li>
                     ))}
                 </ul>
