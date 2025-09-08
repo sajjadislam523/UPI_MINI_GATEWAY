@@ -37,9 +37,9 @@ mongoose
     .connect(process.env.MONGO_URI || "")
     .then(() => {
         console.log("✅ Mongo connected");
-        app.listen(PORT, "0.0.0.0", () => {
+        app.listen(PORT, () => {
             console.log(
-                `🚀 Server running at: http://0.0.0.0:${PORT}\n` +
+                `🚀 Server running at: ${PORT}\n` +
                     `🔗 Try from phone: http://<your-pc-ip>:${PORT}`
             );
         });
