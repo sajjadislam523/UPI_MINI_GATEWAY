@@ -14,13 +14,23 @@ export default function PaymentGenerator() {
     const submit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        const token = localStorage.getItem("token");
+        if (!token) {
+            alert("Please login to generate a payment link.");
+            setLoading(false);
+            return;
+        }
         try {
-            const r = await axios.post<CreateOrderResp>(`${api}/api/orders`, {
-                amount,
-                vpa,
-                merchantName,
-                note: "Order",
-            });
+            const r = await axios.post<CreateOrderResp>(
+                `${api}/api/orders`,
+                {
+                    amount,
+                    vpa,
+                    merchantName,
+                    note: "Order",
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             setResult(r.data);
         } catch (err: any) {
             alert(err?.response?.data?.message || "Error");

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useParams } from "react-router-dom";
 import CopyButton from "../components/CopyButton";
 import PaymentIcon from "../components/PaymentIcon";
 import { providerUri } from "../lib/upi";
@@ -19,8 +19,8 @@ export default function PayPage() {
 
     // Fetch order details
     useEffect(() => {
-        if (!orderId) return;
-        (async () => {
+        const fetchOrder = async () => {
+            if (!orderId) return;
             try {
                 const r = await axios.get<OrderPublic>(
                     `${api}/api/orders/${orderId}`
@@ -31,7 +31,8 @@ export default function PayPage() {
             } finally {
                 setLoading(false);
             }
-        })();
+        };
+        fetchOrder();
     }, [orderId, api]);
 
     // Countdown timer (only display)
@@ -75,6 +76,7 @@ export default function PayPage() {
     };
 
     const submitUtr = async () => {
+        if (!orderId) return;
         try {
             await axios.post(`${api}/api/orders/${orderId}/utr`, { utr });
             alert("UTR Submitted.");
