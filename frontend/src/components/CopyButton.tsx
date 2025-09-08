@@ -32,7 +32,7 @@ export default function CopyButton({
     return (
         <button
             onClick={onClick}
-            className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 transition"
+            className="px-3 py-2  rounded border border-blue-500 text-blue-500 cursor-pointer hover:bg-blue-500 hover:text-white transition"
         >
             {label}
         </button>

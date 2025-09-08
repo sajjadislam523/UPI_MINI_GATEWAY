@@ -7,10 +7,16 @@ import { providerUri } from "../lib/upi";
 import type { OrderPublic } from "../types/types";
 
 // icons
+import { BsArrowDown } from "react-icons/bs";
 import googlePay from "../assets/icons/googlepay.png";
 import payTm from "../assets/icons/paytm.svg";
 import phonePay from "../assets/icons/phonepay.svg";
 import upi from "../assets/icons/upi.webp";
+
+// importing logo
+import googlePayLogo from "../assets/icons/logo/googlepay.png";
+import payTmLogo from "../assets/icons/logo/paytm.jpeg";
+import phonePeLogo from "../assets/icons/logo/phonepe.png";
 
 const methods = [
     { name: "phonepay", icon: phonePay },
@@ -148,72 +154,105 @@ export default function PayPage() {
     };
 
     return (
-        <div className="max-w-lg mx-auto space-y-4 rounded-xl shadow p-6">
-            {/* Header with Timer */}
-            <div className="flex items-center justify-between">
+        <div className="w-lg mx-auto space-y-4 rounded-xl p-4">
+            {/* Timer Header */}
+            <div className="flex justify-between items-center">
                 <p className="text-gray-600 text-sm">
                     Order will be closed in:
                 </p>
-                <p className="text-xl font-mono text-blue-600">
-                    {minutes}:{seconds}
+                <p className="text-xl font-mono ">
+                    <span className="bg-blue-600 text-sm p-1 rounded text-white">
+                        {minutes}
+                    </span>
+                    <span className="text-blue-600">:</span>
+                    <span className="bg-blue-600 text-sm p-1 rounded text-white">
+                        {seconds}
+                    </span>
                 </p>
             </div>
-            <div className="flex items-center justify-between">
+
+            {/* Amount */}
+            <div className="flex justify-between items-center">
                 <p className="text-gray-600 text-sm">Amount</p>
                 <div className="flex items-center gap-3">
-                    <p className="text-xl font-bold text-gray-900">
+                    <p className="text-lg font-bold text-gray-900">
                         ₹ {order.amount}
                     </p>
                     <CopyButton text={String(order.amount)} label="COPY" />
                 </div>
             </div>
 
-            {/* VPA Section */}
-            <div className="mb-4 flex items-center justify-between">
+            {/* VPA/UPI */}
+            <div className="flex justify-between items-center">
                 <p className="text-gray-600 text-sm">VPA/UPI</p>
                 <div className="flex items-center gap-3">
-                    <p className="font-mono text-lg">{order.maskedVpa}</p>
+                    <p className="font-mono font-bold text-lg">
+                        {order.maskedVpa}
+                    </p>
                     <CopyButton text={fullVpa} label="COPY" />
                 </div>
             </div>
 
-            {/* Payment Methods */}
-            <div className="flex flex-col items-center gap-3 mb-6">
+            {/* Notice */}
+            <div className="mt-2">
+                <p className="text-red-600 font-bold text-sm">Notice</p>
+                <p className="text-xs ">
+                    1. <span className="text-red-600">One UPI</span> can only
+                    transfer money <span className="text-red-600">once</span>.
+                    <br />
+                    2. Don’t change the{" "}
+                    <span className=" text-red-600">payment amount</span>.
+                    Otherwise, the order cannot be closed.
+                </p>
+            </div>
+
+            {/* Payment Methods with radio buttons */}
+            <div className="flex flex-col mb-6 border-y border-gray-200 divide-y divide-gray-200">
                 {methods.map((m) => (
-                    <img
+                    <label
                         key={m.name}
-                        src={m.icon}
-                        alt={m.name}
-                        onClick={() => onPay(m.name)}
-                        className="p-4 w-20 h-20 cursor-pointer "
-                    />
+                        className="flex items-center gap-3 p-2 cursor-pointer hover:bg-blue-50"
+                    >
+                        <input
+                            type="radio"
+                            name="paymentMethod"
+                            className="w-5 h-5 accent-blue-600 rounded-full"
+                            onClick={() => onPay(m.name)}
+                        />
+                        <img
+                            src={m.icon}
+                            alt={m.name}
+                            className="w-20 h-10 ml-4 object-contain"
+                        />
+                    </label>
                 ))}
             </div>
 
             {/* UTR Input */}
             <div className="mb-6">
-                <label className="block mb-1 text-gray-700">
-                    Fill the UTR number after you complete payment:
+                <label className="flex gap-1 items-center mb-2 text-blue-700 text-sm">
+                    <BsArrowDown /> Fill the UTR number after you complete
+                    payment:
                 </label>
                 <input
-                    className="w-full p-3 border rounded mb-3"
+                    className="w-full p-3 focus:outline-none mb-3 "
                     placeholder="Enter UTR number"
                     value={utr}
                     onChange={(e) => setUtr(e.target.value)}
                 />
                 <button
                     onClick={submitUtr}
-                    className="w-full bg-blue-600 text-white rounded p-3 font-semibold hover:bg-blue-700"
+                    className="w-full bg-blue-600 text-white rounded-full p-3 font-semibold hover:bg-blue-700"
                 >
                     Submit UTR
                 </button>
             </div>
-
-            {/* Notice */}
-            <p className="text-xs text-red-600 mt-4">
-                Notice: One UPI can only transfer money once. Don't change the
-                payment amount — otherwise the order cannot be closed.
-            </p>
+            <div className="flex items-center justify-center gap-2">
+                <img className="w-9 h-9" src={phonePeLogo} alt="" />
+                <img className="w-9 h-9" src={googlePayLogo} alt="" />
+                <img className="w-8 h-8" src={payTmLogo} alt="" />
+                <img className="w-16 h-16" src={upi} alt="" />
+            </div>
         </div>
     );
 }
