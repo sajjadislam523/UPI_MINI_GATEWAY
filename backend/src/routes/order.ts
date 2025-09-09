@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import rateLimit from "express-rate-limit";
+import { rateLimit } from "express-rate-limit";
 import { customAlphabet } from "nanoid";
 import { admin, AuthRequest, protect } from "../middleware/auth.js";
 import Order from "../models/Order.js";
