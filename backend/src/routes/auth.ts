@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
 import { Request, Response, Router } from "express";
 import jwt from "jsonwebtoken";
-import { admin, protect } from "../middleware/auth";
-import User from "../models/User";
+import { admin, protect } from "../middleware/auth.js";
+import User from "../models/User.js";
 
 const router = Router();
 

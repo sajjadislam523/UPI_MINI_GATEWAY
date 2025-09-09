@@ -1,9 +1,9 @@
 import { Request, Response, Router } from "express";
 import rateLimit from "express-rate-limit";
 import { customAlphabet } from "nanoid";
-import { admin, AuthRequest, protect } from "../middleware/auth";
-import Order from "../models/Order";
-import { buildUpiLink, isValidVpa, maskVpa } from "../utils/upi";
+import { admin, AuthRequest, protect } from "../middleware/auth.js";
+import Order from "../models/Order.js";
+import { buildUpiLink, isValidVpa, maskVpa } from "../utils/upi.js";
 
 const router = Router();
 const nano = customAlphabet("1234567890abcdefghijklmnopqrstuvwxyz", 10);

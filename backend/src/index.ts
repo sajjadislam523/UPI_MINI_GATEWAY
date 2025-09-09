@@ -2,10 +2,10 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
-import authRouter from "./routes/auth";
-import dashboardRouter from "./routes/dashboard";
-import ordersRouter from "./routes/order";
-import usersRouter from "./routes/users";
+import authRouter from "./routes/auth.js";
+import dashboardRouter from "./routes/dashboard.js";
+import ordersRouter from "./routes/order.js";
+import usersRouter from "./routes/users.js";
 
 dotenv.config();
 

@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { admin, protect } from "../middleware/auth";
-import Order from "../models/Order";
-import User from "../models/User";
+import { admin, protect } from "../middleware/auth.js";
+import Order from "../models/Order.js";
+import User from "../models/User.js";
 
 const router = Router();
 

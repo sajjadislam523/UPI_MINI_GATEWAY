@@ -25,15 +25,13 @@ export const protect = (
         req.user = decoded;
         next();
     } catch (err) {
-        return res.status(401).json({ message: "not authorized, token failed" });
+        return res
+            .status(401)
+            .json({ message: "not authorized, token failed" });
     }
 };
 
-export const admin = (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction
-) => {
+export const admin = (req: AuthRequest, res: Response, next: NextFunction) => {
     if (req.user && req.user.role === "admin") {
         next();
     } else {
