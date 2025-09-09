@@ -35,9 +35,6 @@ app.use("/api/dashboard", dashboardRouter);
 app.use("/api/orders", ordersRouter);
 app.use("/api/users", usersRouter);
 
-// ✅ Parse PORT as number
-const PORT = parseInt(process.env.PORT || "4000", 10);
-
 // ✅ Connect to DB and listen on all network interfaces
 mongoose
     .connect(process.env.MONGO_URI || "")
