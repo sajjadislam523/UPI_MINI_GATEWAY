@@ -13,15 +13,10 @@ import payTm from "../assets/icons/paytm.svg";
 import phonePay from "../assets/icons/phonepay.svg";
 import upi from "../assets/icons/upi.webp";
 
-// importing logo
-import googlePayLogo from "../assets/icons/logo/googlepay.png";
-import payTmLogo from "../assets/icons/logo/paytm.jpeg";
-import phonePeLogo from "../assets/icons/logo/phonepe.png";
-
 const methods = [
-    { name: "phonepay", icon: phonePay },
-    { name: "paytm", icon: payTm },
-    { name: "googlepay", icon: googlePay },
+    { name: "PhonePe", icon: phonePay },
+    { name: "Paytm", icon: payTm },
+    { name: "Google Pay", icon: googlePay },
     { name: "upi", icon: upi },
 ];
 
@@ -154,7 +149,7 @@ export default function PayPage() {
     };
 
     return (
-        <div className="w-lg mx-auto space-y-4 rounded-xl p-4">
+        <div className="max-w-lg w-full mx-auto space-y-4 rounded-xl p-4">
             {/* Timer Header */}
             <div className="flex justify-between items-center">
                 <p className="text-gray-600 text-sm">
@@ -222,7 +217,7 @@ export default function PayPage() {
                         <img
                             src={m.icon}
                             alt={m.name}
-                            className="w-20 h-10 ml-4 object-contain"
+                            className="w-24 h-12 ml-4 object-contain"
                         />
                     </label>
                 ))}
@@ -246,12 +241,6 @@ export default function PayPage() {
                 >
                     Submit UTR
                 </button>
-            </div>
-            <div className="flex items-center justify-center gap-2">
-                <img className="w-9 h-9" src={phonePeLogo} alt="" />
-                <img className="w-9 h-9" src={googlePayLogo} alt="" />
-                <img className="w-8 h-8" src={payTmLogo} alt="" />
-                <img className="w-16 h-16" src={upi} alt="" />
             </div>
         </div>
     );
