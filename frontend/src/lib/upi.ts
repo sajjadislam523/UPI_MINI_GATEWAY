@@ -4,11 +4,6 @@ export function providerUri(
     vpa: string,
     amount: number
 ): string {
-    // If a full upiLink is provided, prioritize it for all methods.
-    if (upiLink) {
-        return upiLink;
-    }
-
     // Base UPI parameters
     const params = new URLSearchParams({
         pa: vpa,
@@ -30,7 +25,11 @@ export function providerUri(
             baseUri = "tez://upi/pay";
             break;
         default:
-            // Generic UPI link
+            // For the generic "upi" method, prioritize the backend link if available
+            if (upiLink) {
+                return upiLink;
+            }
+            // Otherwise, construct a standard UPI link
             baseUri = "upi://pay";
             break;
     }
